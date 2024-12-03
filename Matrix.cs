@@ -6,9 +6,14 @@ namespace MyMath
 {
     public class Matrix
     {
+        public int Rows => _rows;
+        public int Columns => _columns;
+
         private double[,] _data;
         private int _rows;
         private int _columns;
+
+        public static _random = new Random();
 
         public Matrix(int rows, int columns)
         {
@@ -43,9 +48,6 @@ namespace MyMath
                 _data[i, j] = value;
             }
         }
-
-        public int Rows => _rows;
-        public int Columns => _columns;
 
         private void ValidateIndices(int i, int j)
         {
@@ -109,7 +111,7 @@ namespace MyMath
         {
             Matrix result = new Matrix(_rows, _columns);
             int minDimension = Math.Min(_rows, _columns);
-            
+
             for (int i = 0; i < minDimension; i++)
             {
                 result[i, i] = _data[i, i];
@@ -117,7 +119,7 @@ namespace MyMath
 
             return result;
         }
-        
+
         public Matrix Transpose()
         {
             Matrix result = new Matrix(_columns, _rows);
@@ -126,6 +128,52 @@ namespace MyMath
                     result[j, i] = _data[i, j];
 
             return result;
+        }
+
+
+        public double Determinant()
+        {
+            if (_rows != _columns)
+                throw new InvalidOperationException("Matrix must be square to calculate determinant");
+
+            if (_rows == 1)
+                return _data[0, 0];
+
+            if (_rows == 2)
+                return _data[0, 0] * _data[1, 1] - _data[0, 1] * _data[1, 0];
+
+            double det = 0;
+            for (int j = 0; j < _columns; j++)
+            {
+                det += _data[0, j] * Cofactor(0, j);
+            }
+
+            return det;
+        }
+
+        private double Cofactor(int row, int col)
+        {
+            return Math.Pow(-1, row + col) * Minor(row, col);
+        }
+
+        private double Minor(int row, int col)
+        {
+            Matrix minor = new Matrix(_rows - 1, _columns - 1);
+            int r = 0, c = 0;
+
+            for (int i = 0; i < _rows; i++)
+            {
+                if (i == row) continue;
+                c = 0;
+                for (int j = 0; j < _columns; j++)
+                {
+                    if (j == col) continue;
+                    minor[r, c] = _data[i, j];
+                    c++;
+                }
+                r++;
+            }
+            return minor.Determinant();
         }
 
         public override string ToString()
